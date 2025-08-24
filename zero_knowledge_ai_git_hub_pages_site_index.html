@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zero‑Knowledge AI</title>
+  <meta name="description" content="A minimal AI site with no knowledge at all. Deployable on GitHub Pages." />
+  <style>
+    :root{
+      --bg:#0f1115;          /* deep charcoal */
+      --panel:#151922;       /* card surface */
+      --muted:#9aa3b2;       /* secondary text */
+      --text:#e7ecf3;        /* primary text */
+      --accent:#5c86ff;      /* blue accent similar to screenshot */
+      --accent-2:#8e5cff;    /* purple accent */
+      --ring:0 0 0 2px rgba(92,134,255,.25);
+      --radius:20px;
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, Noto Sans, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 70% -10%, rgba(92,134,255,.12), transparent),
+                  radial-gradient(1000px 600px at 10% -20%, rgba(142,92,255,.10), transparent),
+                  var(--bg);
+      color:var(--text);
+      display:grid; place-items:center;
+    }
+    .page{width:min(1050px, 92vw); margin:auto; padding:56px 0 96px}
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:56px;
+    }
+    .brand{display:flex; align-items:center; gap:12px; font-weight:700}
+    .logo{width:28px; height:28px; border-radius:8px; background:conic-gradient(from 180deg, var(--accent), var(--accent-2)); box-shadow:0 0 40px rgba(92,134,255,.35) inset}
+    .badge{font-size:12px; color:var(--muted); background:#0b0d12; border:1px solid #1d2331; padding:6px 10px; border-radius:999px}
+    .upgrade{padding:8px 14px; border-radius:999px; background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; border:0; cursor:pointer}
+
+    .hello{font-size:44px; font-weight:800; text-align:center; margin:60px 0 26px; letter-spacing:.3px}
+    .hello .name{color:var(--accent)}
+
+    .search{
+      background:var(--panel); border:1px solid #1e2433; border-radius:28px; box-shadow:var(--shadow);
+      display:flex; align-items:center; gap:14px; padding:14px 16px; width:min(920px, 92vw); margin:0 auto; transition:.2s border-color, .2s box-shadow;
+    }
+    .search:focus-within{border-color:#2c3750; box-shadow:var(--ring)}
+    .search .controls{display:flex; align-items:center; gap:10px; color:var(--muted)}
+    .search input{
+      flex:1; background:transparent; border:0; outline:0; color:var(--text); font-size:18px; padding:8px 6px;
+    }
+    .mic{opacity:.6}
+
+    .chips{display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:22px auto 0; max-width:780px}
+    .chip{background:#0d111a; border:1px solid #1d2331; color:var(--muted); padding:10px 14px; border-radius:14px; font-size:14px}
+
+    /* Chat sheet */
+    .sheet{width:min(900px, 92vw); margin:42px auto 0; display:none}
+    .card{background:var(--panel); border:1px solid #1f2636; border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
+    .card header{display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid #20283b}
+    .muted{color:var(--muted)}
+    .thread{padding:20px; display:grid; gap:16px}
+    .msg{display:grid; gap:6px}
+    .from{font-size:12px; color:var(--muted)}
+    .bubble{background:#0d111a; border:1px solid #1d2331; border-radius:14px; padding:14px}
+
+    .footer{display:flex; align-items:center; gap:8px; padding:14px; border-top:1px solid #20283b}
+    .footer input{flex:1; background:transparent; border:0; outline:0; color:var(--text); font-size:16px; padding:12px}
+    .send{padding:10px 14px; border-radius:12px; border:1px solid #2b3550; background:#121829; color:#cdd7ee; cursor:pointer}
+
+    /* Tiny helper text under the bar */
+    .hint{color:var(--muted); text-align:center; font-size:12px; margin-top:8px}
+
+    @media (max-width:640px){
+      .hello{font-size:34px}
+      .search{border-radius:22px}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand"><div class="logo" aria-hidden="true"></div> Zero‑Knowledge</div>
+      <span class="badge">Static · No training data</span>
+      <button class="upgrade" onclick="alert('Thanks! There is nothing to upgrade — this AI has no knowledge 😄');">Upgrade</button>
+    </header>
+
+    <h1 class="hello">Hello, <span class="name" id="helloName">Friend</span></h1>
+
+    <div class="search" id="homeSearch">
+      <div class="controls" aria-hidden="true">＋<span class="muted">Tools</span></div>
+      <input id="q" placeholder="Ask anything… (I truly know nothing)" autocomplete="off" />
+      <div class="mic">🎙️</div>
+    </div>
+    <div class="hint">Press Enter to try a question. You’ll see how a zero‑knowledge AI behaves.</div>
+
+    <div class="chips">
+      <div class="chip">Tell me what you can do</div>
+      <div class="chip">Inspire me</div>
+      <div class="chip">Give me study tips</div>
+      <div class="chip">Save me time</div>
+    </div>
+
+    <!-- Chat area (revealed after first question) -->
+    <section class="sheet" id="chat">
+      <div class="card">
+        <header>
+          <strong>Zero‑Knowledge Chat</strong>
+          <span class="muted">This demo intentionally has <em>no knowledge</em>.</span>
+        </header>
+        <div class="thread" id="thread"></div>
+        <div class="footer">
+          <input id="prompt" placeholder="Type another message…" />
+          <button class="send" id="send">Send</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Personalize greeting from URL param ?name=Jax
+    const params = new URLSearchParams(location.search);
+    const name = params.get('name') || 'Friend';
+    document.getElementById('helloName').textContent = name;
+
+    const home = document.getElementById('homeSearch');
+    const q = document.getElementById('q');
+    const chat = document.getElementById('chat');
+    const thread = document.getElementById('thread');
+    const promptInput = document.getElementById('prompt');
+    const sendBtn = document.getElementById('send');
+
+    function addMsg(role, text){
+      const wrap = document.createElement('div');
+      wrap.className = 'msg';
+      wrap.innerHTML = `<div class="from">${role === 'user' ? 'You' : 'Zero‑Knowledge AI'}</div><div class="bubble">${escapeHtml(text)}</div>`;
+      thread.appendChild(wrap);
+      thread.scrollTop = thread.scrollHeight;
+    }
+    function escapeHtml(str){
+      return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+    }
+
+    function replyZeroKnowledge(){
+      // Always return the same deterministic reply. The site has no model or memory.
+      return (
+        "I don't know. This demo has no model, no training data, and no internet access. " +
+        "If you want it to answer, pass temporary context with the URL like ?context=Your+facts — " +
+        "otherwise it will always say it does not know."
+      );
+    }
+
+    function handleSubmit(text){
+      const value = (text ?? '').trim();
+      if(!value) return;
+      if(chat.style.display !== 'block') chat.style.display = 'block';
+      addMsg('user', value);
+
+      // Zero‑knowledge deterministic response. If a ?context= param is present, we echo it back
+      // to prove we still do not *know* anything beyond what you explicitly provide each time.
+      const ctx = params.get('context');
+      let answer = replyZeroKnowledge();
+      if(ctx){
+        answer += `\n\nYou supplied this ephemeral context via URL: "${ctx}"\n`+
+                  `I can reference what you provided in this session, but I still don't retain it.`;
+      }
+      addMsg('assistant', answer);
+    }
+
+    q.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){
+        handleSubmit(q.value);
+        promptInput.focus();
+      }
+    });
+    sendBtn.addEventListener('click', ()=> handleSubmit(promptInput.value));
+    promptInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') handleSubmit(promptInput.value) });
+
+    // Optional: preset chip clicks
+    document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', ()=>{
+      q.value = ch.textContent.trim(); q.focus();
+    }));
+  </script>
+</body>
+</html>
